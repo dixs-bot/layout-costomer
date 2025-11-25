@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>OjekX Customer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Leaflet CSS (untuk map) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+
+  <style>
+    :root {
+      --bg: #ffffff;
+      --bg-muted: #eef3ff;
+      --text-main: #0b0b0f;
+      --text-muted: #6b7280;
+      --blue: #3b82f6;
+      --blue-soft: #dbeafe;
+      --blue-neon: #60a5fa;
+      --border: #e5e7eb;
+      --danger: #ef4444;
+      --card-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+      --btn-glow: 0 0 15px rgba(96, 165, 250, 0.9),
+                  0 0 35px rgba(59, 130, 246, 0.65);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Poppins",
+        "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #e0f2ff 0, #ffffff 45%, #eef3ff 100%);
+      color: var(--text-main);
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .app-root {
+      min-height: 100vh;
+    }
+
+    /* GLOBAL LAYOUT */
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .page-main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 1.5rem 1rem;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    /* HEADER */
+
+    .page-header {
+      padding: 1rem 1.25rem;
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .page-header-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .page-header-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+
+    .logo-dot {
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 2px solid var(--blue-neon);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+      color: var(--blue-neon);
+      box-shadow: 0 0 12px rgba(96, 165, 250, 0.7);
+      background: #020617;
+    }
+
+    /* BUTTON */
+
+    .btn {
+      border: none;
+      border-radius: 999px;
+      padding: 0.75rem 1.1rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background-color 0.15s ease,
+        color 0.15s ease,
+        border-color 0.15s ease;
+      text-decoration: none;
+      outline: none;
+    }
+
+    .btn:active {
+      transform: translateY(1px) scale(0.99);
+      box-shadow: none;
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    .btn-primary {
+      background: #020617; /* hitam tua */
+      color: #f9fafb;
+      box-shadow: var(--btn-glow);
+      border: 1px solid rgba(148, 163, 184, 0.4);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 18px #60a5fa, 0 0 40px #3b82f6;
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--blue);
+      border: 1px solid var(--blue-neon);
+      box-shadow: 0 0 10px rgba(191, 219, 254, 0.5);
+    }
+
+    .btn-outline:hover {
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5f0ff;
+      box-shadow: var(--btn-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn-ghost {
+      background: rgba(15, 23, 42, 0.85);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+    }
+
+    .btn-ghost:hover {
+      box-shadow: var(--btn-glow);
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+      border: 1px solid rgba(248, 113, 113, 0.6);
+      box-shadow: 0 0 14px rgba(248, 113, 113, 0.8);
+    }
+
+    /* CARD */
+
+    .card {
+      background: radial-gradient(circle at top, #f4f6ff 0, #ffffff 55%);
+      border-radius: 20px;
+      padding: 1.5rem 1.4rem;
+      box-shadow: var(--card-shadow);
+      border: 1px solid rgba(226, 232, 240, 0.9);
+    }
+
+    /* LANDING PAGE */
+
+    .hero-title {
+      font-size: 1.9rem;
+      font-weight: 900;
+      margin-bottom: 0.7rem;
+      letter-spacing: 0.02em;
+    }
+
+    .hero-highlight {
+      background: linear-gradient(to right, #3b82f6, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+      line-height: 1.5rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      margin-top: 0.4rem;
+    }
+
+    @media (min-width: 480px) {
+      .hero-actions {
+        flex-direction: row;
+      }
+    }
+
+    .hero-pill {
+      margin-top: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      padding: 0.35rem 0.8rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5f0ff;
+      box-shadow: 0 0 12px rgba(37, 99, 235, 0.7);
+    }
+
+    .hero-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+    }
+
+    .hero-map-preview {
+      margin-top: 1.5rem;
+      border-radius: 1.1rem;
+      overflow: hidden;
+      height: 190px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.25);
+    }
+
+    /* FORMS */
+
+    .form-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      margin-bottom: 0.4rem;
+    }
+
+    .form-sub {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.1rem;
+    }
+
+    .form-group {
+      margin-bottom: 0.85rem;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.7rem 0.8rem;
+      border-radius: 0.7rem;
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      font-size: 0.9rem;
+      outline: none;
+      background: rgba(15, 23, 42, 0.02);
+      color: var(--text-main);
+    }
+
+    input:focus {
+      border-color: var(--blue-neon);
+      box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.6);
+      background: #ffffff;
+    }
+
+    .form-footer {
+      margin-top: 0.9rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-align: left;
+    }
+
+    .form-footer a {
+      color: var(--blue);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    /* DASHBOARD */
+
+    .section-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+    }
+
+    .dashboard-wrapper {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 59px);
+      max-width: 960px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .dashboard-top {
+      padding: 0.8rem 1rem 0.4rem;
+    }
+
+    .user-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+    }
+
+    .user-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top, #3b82f6, #0f172a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #e5f0ff;
+      box-shadow: var(--btn-glow);
+      font-size: 1rem;
+    }
+
+    .user-meta {
+      font-size: 0.8rem;
+    }
+
+    .user-name {
+      font-weight: 700;
+    }
+
+    .user-sub {
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      margin-top: 0.15rem;
+    }
+
+    .order-card {
+      background: rgba(15, 23, 42, 0.96);
+      color: #e5e7eb;
+      border-radius: 1rem;
+      padding: 0.9rem 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      box-shadow: 0 14px 30px rgba(15, 23, 42, 0.8);
+      margin-bottom: 0.9rem;
+    }
+
+    .order-card label {
+      color: #9ca3af;
+    }
+
+    .order-card input {
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5e7eb;
+      border-color: rgba(148, 163, 184, 0.8);
+    }
+
+    .order-card input:focus {
+      border-color: var(--blue-neon);
+      box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.7);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .map-container {
+      flex: 1;
+      padding: 0 1rem 0.75rem;
+    }
+
+    .map-card {
+      border-radius: 1.2rem;
+      overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      height: 100%;
+      min-height: 220px;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.4);
+      background: #020617;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+    }
+
+    .orders-list {
+      margin-top: 0.6rem;
+      max-height: 140px;
+      overflow: auto;
+      font-size: 0.8rem;
+    }
+
+    .order-item {
+      border-radius: 0.75rem;
+      padding: 0.5rem 0.6rem;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      margin-bottom: 0.4rem;
+    }
+
+    .order-route {
+      font-weight: 600;
+      margin-bottom: 0.15rem;
+    }
+
+    .order-status {
+      font-size: 0.75rem;
+      color: #a5b4fc;
+    }
+
+    .bottom-bar {
+      padding: 0.7rem 1rem 1.1rem;
+      background: linear-gradient(
+        to top,
+        rgba(15, 23, 42, 0.9),
+        rgba(15, 23, 42, 0.4),
+        transparent
+      );
+    }
+
+    /* STATUS TOAST */
+
+    #status-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      max-width: 460px;
+      width: calc(100% - 24px);
+      padding: 8px 12px;
+      background: rgba(3, 7, 18, 0.98);
+      color: #e5e7eb;
+      font-size: 12px;
+      border-radius: 999px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      white-space: pre-line;
+      z-index: 999;
+      text-align: center;
+      border: 1px solid rgba(96, 165, 250, 0.6);
+    }
+
+    #status-toast.show {
+      opacity: 1;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    footer {
+      margin-top: 1.4rem;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    @media (min-width: 768px) {
+      .page-main {
+        padding: 2rem 1.5rem;
+      }
+
+      .container {
+        max-width: 520px;
+      }
+
+      .dashboard-wrapper {
+        flex-direction: row;
+        height: calc(100vh - 59px);
+      }
+
+      .map-container {
+        flex: 1;
+        padding-right: 1.5rem;
+      }
+
+      .bottom-bar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+      }
+    }
+
+    .leaflet-container {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-root">
+    <!-- LANDING -->
+    <div class="page" id="screen-landing">
+      <header class="page-header">
+        <div>
+          <div class="page-header-title">OjekX Customer</div>
+          <div class="page-header-sub">
+            Pesan ojek dengan tampilan putih & neon biru.
+          </div>
+        </div>
+        <div class="logo-dot">OX</div>
+      </header>
+
+      <main class="page-main">
+        <div class="container">
+          <div class="card">
+            <h1 class="hero-title">
+              Satu <span class="hero-highlight">tap</span> untuk perjalanan aman.
+            </h1>
+            <p class="hero-sub">
+              Tentukan lokasi jemput & tujuan, kami carikan driver terdekat
+              dengan tampilan peta yang bersih dan elegan.
+            </p>
+
+            <div class="hero-actions">
+              <button class="btn btn-primary btn-block" onclick="goTo('login')">
+                Masuk Customer
+              </button>
+              <button class="btn btn-outline btn-block" onclick="goTo('register')">
+                Daftar Akun Baru
+              </button>
+            </div>
+
+            <div class="hero-pill">
+              <span class="hero-pill-dot"></span>
+              <span>Lihat gambaran area penjemputan langsung dari landing page</span>
+            </div>
+
+            <div class="hero-map-preview">
+              <div id="landing-map" style="width:100%;height:100%;"></div>
+            </div>
+          </div>
+
+          <footer>© 2025 OjekX. Customer Web Demo.</footer>
+        </div>
+      </main>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="page hidden" id="screen-login">
+      <header class="page-header">
+        <div>
+          <div class="page-header-title">Masuk Customer</div>
+          <div class="page-header-sub">Lanjutkan perjalananmu.</div>
+        </div>
+        <button class="btn btn-ghost" onclick="goTo('landing')">← Kembali</button>
+      </header>
+
+      <main class="page-main">
+        <div class="container">
+          <div class="card">
+            <div class="form-title">Halo lagi 👋</div>
+            <div class="form-sub">
+              Masuk dengan akun customer-mu. Versi ini demo, jadi login hanya
+              simulasi untuk cek tampilan.
+            </div>
+
+            <div class="form-group">
+              <label>Nama</label>
+              <input id="login-name" placeholder="contoh: Budi" />
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <input id="login-password" type="password" placeholder="••••••" />
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="fakeLoginCustomer()">
+              Masuk
+            </button>
+
+            <div class="form-footer">
+              Belum punya akun?
+              <a href="javascript:void(0)" onclick="goTo('register')">
+                Daftar sebagai customer
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- REGISTER -->
+    <div class="page hidden" id="screen-register">
+      <header class="page-header">
+        <div>
+          <div class="page-header-title">Daftar Customer</div>
+          <div class="page-header-sub">
+            Buat akun demo untuk mencoba pemesanan.
+          </div>
+        </div>
+        <button class="btn btn-ghost" onclick="goTo('landing')">← Kembali</button>
+      </header>
+
+      <main class="page-main">
+        <div class="container">
+          <div class="card">
+            <div class="form-title">Daftar akun baru 🚀</div>
+            <div class="form-sub">
+              Di versi produksi, data ini akan disimpan di backend.
+              Sekarang kita fokus dulu ke alur dan tampilan.
+            </div>
+
+            <div class="form-group">
+              <label>Nama</label>
+              <input id="register-name" placeholder="contoh: Budi" />
+            </div>
+
+            <div class="form-group">
+              <label>Password</label>
+              <input id="register-password" type="password" placeholder="minimal 6 karakter" />
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="fakeRegisterCustomer()">
+              Daftar
+            </button>
+
+            <div class="form-footer">
+              Sudah punya akun?
+              <a href="javascript:void(0)" onclick="goTo('login')">
+                Masuk di sini
+              </a>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- DASHBOARD CUSTOMER -->
+    <div class="page hidden" id="screen-dashboard">
+      <header class="page-header">
+        <div>
+          <div class="page-header-title">OjekX Customer</div>
+          <div class="page-header-sub">Dashboard pemesanan • Map + order</div>
+        </div>
+        <button class="btn btn-ghost" onclick="logoutCustomer()">Logout</button>
+      </header>
+
+      <div class="dashboard-wrapper">
+        <div class="dashboard-top">
+          <div class="user-row">
+            <div class="user-info">
+              <div class="user-avatar" id="user-avatar">C</div>
+              <div class="user-meta">
+                <div class="user-name" id="user-name">Customer OjekX</div>
+                <div class="user-sub" id="user-sub">
+                  Belum ada pesanan aktif
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-card">
+            <div class="section-title">Pesan perjalanan</div>
+
+            <div class="form-group">
+              <label>Lokasi Jemput</label>
+              <input id="pickup-input" placeholder="contoh: Rumah Budi, Jl. Melati no.5" />
+            </div>
+
+            <div class="form-group">
+              <label>Tujuan</label>
+              <input id="destination-input" placeholder="contoh: Mall, Stasiun, Kantor" />
+            </div>
+
+            <button class="btn btn-primary btn-block" onclick="createFakeOrder()">
+              Pesan Ojek Sekarang
+            </button>
+
+            <div class="orders-list" id="orders-list"></div>
+          </div>
+        </div>
+
+        <div class="map-container">
+          <div class="section-title">Peta area sekitar</div>
+          <div class="map-card">
+            <div id="map"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-bar">
+        <button class="btn btn-primary btn-block" onclick="createFakeOrderQuick()">
+          <span>Pesan dari lokasi saya</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="status-toast"></div>
+
+  <!-- Leaflet JS -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <script>
+    let currentScreen = "landing";
+    let landingMapInstance = null;
+    let mapInstance = null;
+    let orders = [];
+
+    function showToast(text) {
+      const el = document.getElementById("status-toast");
+      el.textContent = text;
+      el.classList.add("show");
+      setTimeout(() => {
+        el.classList.remove("show");
+      }, 2000);
+    }
+
+    function goTo(screen) {
+      ["landing", "login", "register", "dashboard"].forEach((name) => {
+        const el = document.getElementById("screen-" + name);
+        if (el) el.classList.add("hidden");
+      });
+
+      const target = document.getElementById("screen-" + screen);
+      if (target) target.classList.remove("hidden");
+
+      currentScreen = screen;
+
+      if (screen === "dashboard") {
+        initDashboardMap();
+        renderOrders();
+      }
+    }
+
+    function fakeRegisterCustomer() {
+      const name = document.getElementById("register-name").value.trim();
+      if (!name) {
+        showToast("Isi nama dulu");
+        return;
+      }
+      showToast("Daftar demo berhasil, silakan login");
+      goTo("login");
+      document.getElementById("login-name").value = name;
+    }
+
+    function fakeLoginCustomer() {
+      const name = document.getElementById("login-name").value.trim();
+      if (!name) {
+        showToast("Isi nama dulu");
+        return;
+      }
+      document.getElementById("user-name").textContent = name || "Customer OjekX";
+      document.getElementById("user-avatar").textContent =
+        (name[0] || "C").toUpperCase();
+      document.getElementById("user-sub").textContent = "Belum ada pesanan aktif";
+      goTo("dashboard");
+      showToast("Login demo berhasil");
+    }
+
+    function logoutCustomer() {
+      orders = [];
+      renderOrders();
+      document.getElementById("user-sub").textContent = "Belum ada pesanan aktif";
+      goTo("landing");
+      showToast("Logout");
+    }
+
+    function createFakeOrder() {
+      const pickup = document.getElementById("pickup-input").value.trim();
+      const destination = document.getElementById("destination-input").value.trim();
+
+      if (!pickup || !destination) {
+        showToast("Isi lokasi jemput & tujuan dulu");
+        return;
+      }
+
+      const newOrder = {
+        id: Date.now(),
+        pickup,
+        destination,
+        status: "Menunggu driver menerima...",
+      };
+
+      orders.unshift(newOrder);
+      renderOrders();
+
+      document.getElementById("pickup-input").value = "";
+      document.getElementById("destination-input").value = "";
+
+      document.getElementById("user-sub").textContent =
+        "Ada " + orders.length + " pesanan (demo)";
+      showToast("Pesanan demo dibuat");
+    }
+
+    function createFakeOrderQuick() {
+      const newOrder = {
+        id: Date.now(),
+        pickup: "Lokasi saya sekarang",
+        destination: "Tujuan belum dipilih",
+        status: "Menunggu driver (demo)",
+      };
+      orders.unshift(newOrder);
+      renderOrders();
+      document.getElementById("user-sub").textContent =
+        "Ada " + orders.length + " pesanan (demo)";
+      showToast("Pesanan cepat (demo) dibuat");
+    }
+
+    function renderOrders() {
+      const listEl = document.getElementById("orders-list");
+      listEl.innerHTML = "";
+      if (orders.length === 0) {
+        listEl.innerHTML =
+          '<div style="font-size:0.78rem;color:#9ca3af;">Belum ada pesanan. Coba buat satu di atas.</div>';
+        return;
+      }
+      orders.forEach((o) => {
+        const div = document.createElement("div");
+        div.className = "order-item";
+        div.innerHTML =
+          '<div class="order-route">' +
+          o.pickup +
+          " → " +
+          o.destination +
+          "</div>" +
+          '<div class="order-status">' +
+          o.status +
+          "</div>";
+        listEl.appendChild(div);
+      });
+    }
+
+    function initLandingMap() {
+      if (landingMapInstance) return;
+      const center = [-6.914744, 107.60981]; // Bandung contoh
+      landingMapInstance = L.map("landing-map", {
+        center,
+        zoom: 12,
+        scrollWheelZoom: false,
+        dragging: false,
+        zoomControl: false,
+      });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+      }).addTo(landingMapInstance);
+    }
+
+    function initDashboardMap() {
+      if (mapInstance) return;
+      const center = [-6.914744, 107.60981];
+      mapInstance = L.map("map", {
+        center,
+        zoom: 13,
+        scrollWheelZoom: true,
+      });
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap",
+      }).addTo(mapInstance);
+
+      const marker = L.marker(center).addTo(mapInstance);
+      marker.bindPopup("Area penjemputan populer (demo)").openPopup();
+    }
+
+    window.addEventListener("load", () => {
+      goTo("landing");
+      initLandingMap();
+    });
+  </script>
+</body>
+</html>
